@@ -7,7 +7,7 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "clusterissuers.cert-manager.io"
     }
@@ -1874,7 +1874,7 @@ resource "kubernetes_manifest" "customresourcedefinition_challenges_acme_cert_ma
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "challenges.acme.cert-manager.io"
     }
@@ -3400,7 +3400,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "certificaterequests.cert-manager.io"
     }
@@ -3466,7 +3466,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
             "openAPIV3Schema" = {
               "description" = <<-EOT
               A CertificateRequest is used to request a signed certificate from one of the configured issuers. 
-               All fields within the CertificateRequest's `spec` are immutable after creation. A CertificateRequest will either succeed or fail, as denoted by its `status.state` field. 
+               All fields within the CertificateRequest's `spec` are immutable after creation. A CertificateRequest will either succeed or fail, as denoted by its `Ready` status condition and its `status.failureTime` field. 
                A CertificateRequest is a one-shot resource, meaning it represents a single point in time request for a certificate and cannot be re-used.
               EOT
               "properties" = {
@@ -3482,10 +3482,10 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
                   "type" = "object"
                 }
                 "spec" = {
-                  "description" = "Desired state of the CertificateRequest resource."
+                  "description" = "Specification of the desired state of the CertificateRequest resource. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status"
                   "properties" = {
                     "duration" = {
-                      "description" = "The requested 'duration' (i.e. lifetime) of the Certificate. This option may be ignored/overridden by some issuer types."
+                      "description" = "Requested 'duration' (i.e. lifetime) of the Certificate. Note that the issuer may choose to ignore the requested duration, just like any other requested attribute."
                       "type" = "string"
                     }
                     "extra" = {
@@ -3507,11 +3507,18 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
                       "x-kubernetes-list-type" = "atomic"
                     }
                     "isCA" = {
-                      "description" = "IsCA will request to mark the certificate as valid for certificate signing when submitting to the issuer. This will automatically add the `cert sign` usage to the list of `usages`."
+                      "description" = <<-EOT
+                      Requested basic constraints isCA value. Note that the issuer may choose to ignore the requested isCA value, just like any other requested attribute. 
+                       NOTE: If the CSR in the `Request` field has a BasicConstraints extension, it must have the same isCA value as specified here. 
+                       If true, this will automatically add the `cert sign` usage to the list of requested `usages`.
+                      EOT
                       "type" = "boolean"
                     }
                     "issuerRef" = {
-                      "description" = "IssuerRef is a reference to the issuer for this CertificateRequest.  If the `kind` field is not set, or set to `Issuer`, an Issuer resource with the given name in the same namespace as the CertificateRequest will be used.  If the `kind` field is set to `ClusterIssuer`, a ClusterIssuer with the provided name will be used. The `name` field in this stanza is required at all times. The group field refers to the API group of the issuer which defaults to `cert-manager.io` if empty."
+                      "description" = <<-EOT
+                      Reference to the issuer responsible for issuing the certificate. If the issuer is namespace-scoped, it must be in the same namespace as the Certificate. If the issuer is cluster-scoped, it can be used from any namespace. 
+                       The `name` field of the reference must always be specified.
+                      EOT
                       "properties" = {
                         "group" = {
                           "description" = "Group of the resource being referred to."
@@ -3532,7 +3539,10 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
                       "type" = "object"
                     }
                     "request" = {
-                      "description" = "The PEM-encoded x509 certificate signing request to be submitted to the CA for signing."
+                      "description" = <<-EOT
+                      The PEM-encoded X.509 certificate signing request to be submitted to the issuer for signing. 
+                       If the CSR has a BasicConstraints extension, its isCA attribute must match the `isCA` value of this CertificateRequest. If the CSR has a KeyUsage extension, its key usages must match the key usages in the `usages` field of this CertificateRequest. If the CSR has a ExtKeyUsage extension, its extended key usages must match the extended key usages in the `usages` field of this CertificateRequest.
+                      EOT
                       "format" = "byte"
                       "type" = "string"
                     }
@@ -3541,7 +3551,11 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
                       "type" = "string"
                     }
                     "usages" = {
-                      "description" = "Usages is the set of x509 usages that are requested for the certificate. If usages are set they SHOULD be encoded inside the CSR spec Defaults to `digital signature` and `key encipherment` if not specified."
+                      "description" = <<-EOT
+                      Requested key usages and extended key usages. 
+                       NOTE: If the CSR in the `Request` field has uses the KeyUsage or ExtKeyUsage extension, these extensions must have the same values as specified here without any additional values. 
+                       If unset, defaults to `digital signature` and `key encipherment`.
+                      EOT
                       "items" = {
                         "description" = <<-EOT
                         KeyUsage specifies valid usage contexts for keys. See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3 https://tools.ietf.org/html/rfc5280#section-4.2.1.12 
@@ -3588,20 +3602,20 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
                   "type" = "object"
                 }
                 "status" = {
-                  "description" = "Status of the CertificateRequest. This is set and managed automatically."
+                  "description" = "Status of the CertificateRequest. This is set and managed automatically. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status"
                   "properties" = {
                     "ca" = {
-                      "description" = "The PEM encoded x509 certificate of the signer, also known as the CA (Certificate Authority). This is set on a best-effort basis by different issuers. If not set, the CA is assumed to be unknown/not available."
+                      "description" = "The PEM encoded X.509 certificate of the signer, also known as the CA (Certificate Authority). This is set on a best-effort basis by different issuers. If not set, the CA is assumed to be unknown/not available."
                       "format" = "byte"
                       "type" = "string"
                     }
                     "certificate" = {
-                      "description" = "The PEM encoded x509 certificate resulting from the certificate signing request. If not set, the CertificateRequest has either not been completed or has failed. More information on failure can be found by checking the `conditions` field."
+                      "description" = "The PEM encoded X.509 certificate resulting from the certificate signing request. If not set, the CertificateRequest has either not been completed or has failed. More information on failure can be found by checking the `conditions` field."
                       "format" = "byte"
                       "type" = "string"
                     }
                     "conditions" = {
-                      "description" = "List of status conditions to indicate the status of a CertificateRequest. Known condition types are `Ready` and `InvalidRequest`."
+                      "description" = "List of status conditions to indicate the status of a CertificateRequest. Known condition types are `Ready`, `InvalidRequest`, `Approved` and `Denied`."
                       "items" = {
                         "description" = "CertificateRequestCondition contains condition information for a CertificateRequest."
                         "properties" = {
@@ -3653,9 +3667,6 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
                   "type" = "object"
                 }
               }
-              "required" = [
-                "spec",
-              ]
               "type" = "object"
             }
           }
@@ -3678,7 +3689,7 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "issuers.cert-manager.io"
     }
@@ -5545,7 +5556,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "certificates.cert-manager.io"
     }
@@ -5601,7 +5612,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
           "schema" = {
             "openAPIV3Schema" = {
               "description" = <<-EOT
-              A Certificate resource should be created to ensure an up to date and signed x509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`. 
+              A Certificate resource should be created to ensure an up to date and signed X.509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`. 
                The stored certificate will be renewed before it expires (as configured by `spec.renewBefore`).
               EOT
               "properties" = {
@@ -5617,10 +5628,13 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                   "type" = "object"
                 }
                 "spec" = {
-                  "description" = "Desired state of the Certificate resource."
+                  "description" = "Specification of the desired state of the Certificate resource. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status"
                   "properties" = {
                     "additionalOutputFormats" = {
-                      "description" = "AdditionalOutputFormats defines extra output formats of the private key and signed certificate chain to be written to this Certificate's target Secret. This is an Alpha Feature and is only enabled with the `--feature-gates=AdditionalCertificateOutputFormats=true` option on both the controller and webhook components."
+                      "description" = <<-EOT
+                      Defines extra output formats of the private key and signed certificate chain to be written to this Certificate's target Secret. 
+                       This is an Alpha Feature and is only enabled with the `--feature-gates=AdditionalCertificateOutputFormats=true` option set on both the controller and webhook components.
+                      EOT
                       "items" = {
                         "description" = "CertificateAdditionalOutputFormat defines an additional output format of a Certificate resource. These contain supplementary data formats of the signed certificate chain and paired private key."
                         "properties" = {
@@ -5641,44 +5655,59 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                       "type" = "array"
                     }
                     "commonName" = {
-                      "description" = "CommonName is a common name to be used on the Certificate. The CommonName should have a length of 64 characters or fewer to avoid generating invalid CSRs. This value is ignored by TLS clients when any subject alt name is set. This is x509 behaviour: https://tools.ietf.org/html/rfc6125#section-6.4.4"
+                      "description" = <<-EOT
+                      Requested common name X509 certificate subject attribute. More info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6 NOTE: TLS clients will ignore this value when any subject alternative name is set (see https://tools.ietf.org/html/rfc6125#section-6.4.4). 
+                       Should have a length of 64 characters or fewer to avoid generating invalid CSRs. Cannot be set if the `literalSubject` field is set.
+                      EOT
                       "type" = "string"
                     }
                     "dnsNames" = {
-                      "description" = "DNSNames is a list of DNS subjectAltNames to be set on the Certificate."
+                      "description" = "Requested DNS subject alternative names."
                       "items" = {
                         "type" = "string"
                       }
                       "type" = "array"
                     }
                     "duration" = {
-                      "description" = "The requested 'duration' (i.e. lifetime) of the Certificate. This option may be ignored/overridden by some issuer types. If unset this defaults to 90 days. Certificate will be renewed either 2/3 through its duration or `renewBefore` period before its expiry, whichever is later. Minimum accepted duration is 1 hour. Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration"
+                      "description" = <<-EOT
+                      Requested 'duration' (i.e. lifetime) of the Certificate. Note that the issuer may choose to ignore the requested duration, just like any other requested attribute. 
+                       If unset, this defaults to 90 days. Minimum accepted duration is 1 hour. Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
+                      EOT
                       "type" = "string"
                     }
                     "emailAddresses" = {
-                      "description" = "EmailAddresses is a list of email subjectAltNames to be set on the Certificate."
+                      "description" = "Requested email subject alternative names."
                       "items" = {
                         "type" = "string"
                       }
                       "type" = "array"
                     }
                     "encodeUsagesInRequest" = {
-                      "description" = "EncodeUsagesInRequest controls whether key usages should be present in the CertificateRequest"
+                      "description" = <<-EOT
+                      Whether the KeyUsage and ExtKeyUsage extensions should be set in the encoded CSR. 
+                       This option defaults to true, and should only be disabled if the target issuer does not support CSRs with these X509 KeyUsage/ ExtKeyUsage extensions.
+                      EOT
                       "type" = "boolean"
                     }
                     "ipAddresses" = {
-                      "description" = "IPAddresses is a list of IP address subjectAltNames to be set on the Certificate."
+                      "description" = "Requested IP address subject alternative names."
                       "items" = {
                         "type" = "string"
                       }
                       "type" = "array"
                     }
                     "isCA" = {
-                      "description" = "IsCA will mark this Certificate as valid for certificate signing. This will automatically add the `cert sign` usage to the list of `usages`."
+                      "description" = <<-EOT
+                      Requested basic constraints isCA value. The isCA value is used to set the `isCA` field on the created CertificateRequest resources. Note that the issuer may choose to ignore the requested isCA value, just like any other requested attribute. 
+                       If true, this will automatically add the `cert sign` usage to the list of requested `usages`.
+                      EOT
                       "type" = "boolean"
                     }
                     "issuerRef" = {
-                      "description" = "IssuerRef is a reference to the issuer for this certificate. If the `kind` field is not set, or set to `Issuer`, an Issuer resource with the given name in the same namespace as the Certificate will be used. If the `kind` field is set to `ClusterIssuer`, a ClusterIssuer with the provided name will be used. The `name` field in this stanza is required at all times."
+                      "description" = <<-EOT
+                      Reference to the issuer responsible for issuing the certificate. If the issuer is namespace-scoped, it must be in the same namespace as the Certificate. If the issuer is cluster-scoped, it can be used from any namespace. 
+                       The `name` field of the reference must always be specified.
+                      EOT
                       "properties" = {
                         "group" = {
                           "description" = "Group of the resource being referred to."
@@ -5699,7 +5728,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                       "type" = "object"
                     }
                     "keystores" = {
-                      "description" = "Keystores configures additional keystore output formats stored in the `secretName` Secret resource."
+                      "description" = "Additional keystore output formats to be stored in the Certificate's Secret."
                       "properties" = {
                         "jks" = {
                           "description" = "JKS configures options for storing a JKS keystore in the `spec.secretName` Secret resource."
@@ -5767,14 +5796,20 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                       "type" = "object"
                     }
                     "literalSubject" = {
-                      "description" = "LiteralSubject is an LDAP formatted string that represents the [X.509 Subject field](https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6). Use this *instead* of the Subject field if you need to ensure the correct ordering of the RDN sequence, such as when issuing certs for LDAP authentication. See https://github.com/cert-manager/cert-manager/issues/3203, https://github.com/cert-manager/cert-manager/issues/4424. This field is alpha level and is only supported by cert-manager installations where LiteralCertificateSubject feature gate is enabled on both cert-manager controller and webhook."
+                      "description" = <<-EOT
+                      Requested X.509 certificate subject, represented using the LDAP "String Representation of a Distinguished Name" [1]. Important: the LDAP string format also specifies the order of the attributes in the subject, this is important when issuing certs for LDAP authentication. Example: `CN=foo,DC=corp,DC=example,DC=com` More info [1]: https://datatracker.ietf.org/doc/html/rfc4514 More info: https://github.com/cert-manager/cert-manager/issues/3203 More info: https://github.com/cert-manager/cert-manager/issues/4424 
+                       Cannot be set if the `subject` or `commonName` field is set. This is an Alpha Feature and is only enabled with the `--feature-gates=LiteralCertificateSubject=true` option set on both the controller and webhook components.
+                      EOT
                       "type" = "string"
                     }
                     "privateKey" = {
-                      "description" = "Options to control private keys used for the Certificate."
+                      "description" = "Private key options. These include the key algorithm and size, the used encoding and the rotation policy."
                       "properties" = {
                         "algorithm" = {
-                          "description" = "Algorithm is the private key algorithm of the corresponding private key for this certificate. If provided, allowed values are either `RSA`,`Ed25519` or `ECDSA` If `algorithm` is specified and `size` is not provided, key size of 256 will be used for `ECDSA` key algorithm and key size of 2048 will be used for `RSA` key algorithm. key size is ignored when using the `Ed25519` key algorithm."
+                          "description" = <<-EOT
+                          Algorithm is the private key algorithm of the corresponding private key for this certificate. 
+                           If provided, allowed values are either `RSA`, `ECDSA` or `Ed25519`. If `algorithm` is specified and `size` is not provided, key size of 2048 will be used for `RSA` key algorithm and key size of 256 will be used for `ECDSA` key algorithm. key size is ignored when using the `Ed25519` key algorithm.
+                          EOT
                           "enum" = [
                             "RSA",
                             "ECDSA",
@@ -5783,7 +5818,10 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                           "type" = "string"
                         }
                         "encoding" = {
-                          "description" = "The private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in. If provided, allowed values are `PKCS1` and `PKCS8` standing for PKCS#1 and PKCS#8, respectively. Defaults to `PKCS1` if not specified."
+                          "description" = <<-EOT
+                          The private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in. 
+                           If provided, allowed values are `PKCS1` and `PKCS8` standing for PKCS#1 and PKCS#8, respectively. Defaults to `PKCS1` if not specified.
+                          EOT
                           "enum" = [
                             "PKCS1",
                             "PKCS8",
@@ -5791,7 +5829,10 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                           "type" = "string"
                         }
                         "rotationPolicy" = {
-                          "description" = "RotationPolicy controls how private keys should be regenerated when a re-issuance is being processed. If set to Never, a private key will only be generated if one does not already exist in the target `spec.secretName`. If one does exists but it does not have the correct algorithm or size, a warning will be raised to await user intervention. If set to Always, a private key matching the specified requirements will be generated whenever a re-issuance occurs. Default is 'Never' for backward compatibility."
+                          "description" = <<-EOT
+                          RotationPolicy controls how private keys should be regenerated when a re-issuance is being processed. 
+                           If set to `Never`, a private key will only be generated if one does not already exist in the target `spec.secretName`. If one does exists but it does not have the correct algorithm or size, a warning will be raised to await user intervention. If set to `Always`, a private key matching the specified requirements will be generated whenever a re-issuance occurs. Default is `Never` for backward compatibility.
+                          EOT
                           "enum" = [
                             "Never",
                             "Always",
@@ -5799,27 +5840,37 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                           "type" = "string"
                         }
                         "size" = {
-                          "description" = "Size is the key bit size of the corresponding private key for this certificate. If `algorithm` is set to `RSA`, valid values are `2048`, `4096` or `8192`, and will default to `2048` if not specified. If `algorithm` is set to `ECDSA`, valid values are `256`, `384` or `521`, and will default to `256` if not specified. If `algorithm` is set to `Ed25519`, Size is ignored. No other values are allowed."
+                          "description" = <<-EOT
+                          Size is the key bit size of the corresponding private key for this certificate. 
+                           If `algorithm` is set to `RSA`, valid values are `2048`, `4096` or `8192`, and will default to `2048` if not specified. If `algorithm` is set to `ECDSA`, valid values are `256`, `384` or `521`, and will default to `256` if not specified. If `algorithm` is set to `Ed25519`, Size is ignored. No other values are allowed.
+                          EOT
                           "type" = "integer"
                         }
                       }
                       "type" = "object"
                     }
                     "renewBefore" = {
-                      "description" = "How long before the currently issued certificate's expiry cert-manager should renew the certificate. The default is 2/3 of the issued certificate's duration. Minimum accepted value is 5 minutes. Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration"
+                      "description" = <<-EOT
+                      How long before the currently issued certificate's expiry cert-manager should renew the certificate. For example, if a certificate is valid for 60 minutes, and `renewBefore=10m`, cert-manager will begin to attempt to renew the certificate 50 minutes after it was issued (i.e. when there are 10 minutes remaining until the certificate is no longer valid). 
+                       NOTE: The actual lifetime of the issued certificate is used to determine the renewal time. If an issuer returns a certificate with a different lifetime than the one requested, cert-manager will use the lifetime of the issued certificate. 
+                       If unset, this defaults to 1/3 of the issued certificate's lifetime. Minimum accepted value is 5 minutes. Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
+                      EOT
                       "type" = "string"
                     }
                     "revisionHistoryLimit" = {
-                      "description" = "revisionHistoryLimit is the maximum number of CertificateRequest revisions that are maintained in the Certificate's history. Each revision represents a single `CertificateRequest` created by this Certificate, either when it was created, renewed, or Spec was changed. Revisions will be removed by oldest first if the number of revisions exceeds this number. If set, revisionHistoryLimit must be a value of `1` or greater. If unset (`nil`), revisions will not be garbage collected. Default value is `nil`."
+                      "description" = <<-EOT
+                      The maximum number of CertificateRequest revisions that are maintained in the Certificate's history. Each revision represents a single `CertificateRequest` created by this Certificate, either when it was created, renewed, or Spec was changed. Revisions will be removed by oldest first if the number of revisions exceeds this number. 
+                       If set, revisionHistoryLimit must be a value of `1` or greater. If unset (`nil`), revisions will not be garbage collected. Default value is `nil`.
+                      EOT
                       "format" = "int32"
                       "type" = "integer"
                     }
                     "secretName" = {
-                      "description" = "SecretName is the name of the secret resource that will be automatically created and managed by this Certificate resource. It will be populated with a private key and certificate, signed by the denoted issuer."
+                      "description" = "Name of the Secret resource that will be automatically created and managed by this Certificate resource. It will be populated with a private key and certificate, signed by the denoted issuer. The Secret resource lives in the same namespace as the Certificate resource."
                       "type" = "string"
                     }
                     "secretTemplate" = {
-                      "description" = "SecretTemplate defines annotations and labels to be copied to the Certificate's Secret. Labels and annotations on the Secret will be changed as they appear on the SecretTemplate when added or removed. SecretTemplate annotations are added in conjunction with, and cannot overwrite, the base set of annotations cert-manager sets on the Certificate's Secret."
+                      "description" = "Defines annotations and labels to be copied to the Certificate's Secret. Labels and annotations on the Secret will be changed as they appear on the SecretTemplate when added or removed. SecretTemplate annotations are added in conjunction with, and cannot overwrite, the base set of annotations cert-manager sets on the Certificate's Secret."
                       "properties" = {
                         "annotations" = {
                           "additionalProperties" = {
@@ -5839,7 +5890,10 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                       "type" = "object"
                     }
                     "subject" = {
-                      "description" = "Full X509 name specification (https://golang.org/pkg/crypto/x509/pkix/#Name)."
+                      "description" = <<-EOT
+                      Requested set of X509 certificate subject attributes. More info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6 
+                       The common name attribute is specified separately in the `commonName` field. Cannot be set if the `literalSubject` field is set.
+                      EOT
                       "properties" = {
                         "countries" = {
                           "description" = "Countries to be used on the Certificate."
@@ -5898,14 +5952,17 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                       "type" = "object"
                     }
                     "uris" = {
-                      "description" = "URIs is a list of URI subjectAltNames to be set on the Certificate."
+                      "description" = "Requested URI subject alternative names."
                       "items" = {
                         "type" = "string"
                       }
                       "type" = "array"
                     }
                     "usages" = {
-                      "description" = "Usages is the set of x509 usages that are requested for the certificate. Defaults to `digital signature` and `key encipherment` if not specified."
+                      "description" = <<-EOT
+                      Requested key usages and extended key usages. These usages are used to set the `usages` field on the created CertificateRequest resources. If `encodeUsagesInRequest` is unset or set to `true`, the usages will additionally be encoded in the `request` field which contains the CSR blob. 
+                       If unset, defaults to `digital signature` and `key encipherment`.
+                      EOT
                       "items" = {
                         "description" = <<-EOT
                         KeyUsage specifies valid usage contexts for keys. See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3 https://tools.ietf.org/html/rfc5280#section-4.2.1.12 
@@ -5948,7 +6005,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                   "type" = "object"
                 }
                 "status" = {
-                  "description" = "Status of the Certificate. This is set and managed automatically."
+                  "description" = "Status of the Certificate. This is set and managed automatically. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status"
                   "properties" = {
                     "conditions" = {
                       "description" = "List of status conditions to indicate the status of certificates. Known condition types are `Ready` and `Issuing`."
@@ -6018,7 +6075,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                       "type" = "string"
                     }
                     "notBefore" = {
-                      "description" = "The time after which the certificate stored in the secret named by this resource in spec.secretName is valid."
+                      "description" = "The time after which the certificate stored in the secret named by this resource in `spec.secretName` is valid."
                       "format" = "date-time"
                       "type" = "string"
                     }
@@ -6040,9 +6097,6 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                   "type" = "object"
                 }
               }
-              "required" = [
-                "spec",
-              ]
               "type" = "object"
             }
           }
@@ -6065,7 +6119,7 @@ resource "kubernetes_manifest" "customresourcedefinition_orders_acme_cert_manage
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "orders.acme.cert-manager.io"
     }
@@ -6316,7 +6370,7 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager_cainjec
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-cainjector"
       "namespace" = var.namespace
@@ -6334,7 +6388,7 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -6352,9 +6406,26 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager_webhook
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook"
+      "namespace" = var.namespace
+    }
+  }
+}
+resource "kubernetes_manifest" "configmap_cert_manager_cert_manager" {
+  manifest = {
+    "apiVersion" = "v1"
+    "kind" = "ConfigMap"
+    "metadata" = {
+      "labels" = {
+        "app" = "cert-manager"
+        "app.kubernetes.io/component" = "controller"
+        "app.kubernetes.io/instance" = "cert-manager"
+        "app.kubernetes.io/name" = "cert-manager"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
+      }
+      "name" = "cert-manager"
       "namespace" = var.namespace
     }
   }
@@ -6369,7 +6440,7 @@ resource "kubernetes_manifest" "configmap_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -6386,7 +6457,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_cainjector" {
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-cainjector"
     }
@@ -6490,7 +6561,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_issuers" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-issuers"
     }
@@ -6562,7 +6633,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_clusterissue
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-clusterissuers"
     }
@@ -6634,7 +6705,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_certificates
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-certificates"
     }
@@ -6739,7 +6810,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_orders" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-orders"
     }
@@ -6846,7 +6917,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_challenges" 
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-challenges"
     }
@@ -7012,7 +7083,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_ingress_shim
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-ingress-shim"
     }
@@ -7112,6 +7183,38 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_ingress_shim
     ]
   }
 }
+resource "kubernetes_manifest" "clusterrole_cert_manager_cluster_view" {
+  manifest = {
+    "apiVersion" = "rbac.authorization.k8s.io/v1"
+    "kind" = "ClusterRole"
+    "metadata" = {
+      "labels" = {
+        "app" = "cert-manager"
+        "app.kubernetes.io/component" = "controller"
+        "app.kubernetes.io/instance" = "cert-manager"
+        "app.kubernetes.io/name" = "cert-manager"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
+        "rbac.authorization.k8s.io/aggregate-to-cluster-reader" = "true"
+      }
+      "name" = "cert-manager-cluster-view"
+    }
+    "rules" = [
+      {
+        "apiGroups" = [
+          "cert-manager.io",
+        ]
+        "resources" = [
+          "clusterissuers",
+        ]
+        "verbs" = [
+          "get",
+          "list",
+          "watch",
+        ]
+      },
+    ]
+  }
+}
 resource "kubernetes_manifest" "clusterrole_cert_manager_view" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -7122,8 +7225,9 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_view" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
         "rbac.authorization.k8s.io/aggregate-to-admin" = "true"
+        "rbac.authorization.k8s.io/aggregate-to-cluster-reader" = "true"
         "rbac.authorization.k8s.io/aggregate-to-edit" = "true"
         "rbac.authorization.k8s.io/aggregate-to-view" = "true"
       }
@@ -7172,7 +7276,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_edit" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
         "rbac.authorization.k8s.io/aggregate-to-admin" = "true"
         "rbac.authorization.k8s.io/aggregate-to-edit" = "true"
       }
@@ -7236,7 +7340,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_approve_cert
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-approve:cert-manager-io"
     }
@@ -7269,7 +7373,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_certificates
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-certificatesigningrequests"
     }
@@ -7339,7 +7443,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_webhook_subjectaccessre
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook:subjectaccessreviews"
     }
@@ -7368,7 +7472,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_cainjector" {
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-cainjector"
     }
@@ -7396,7 +7500,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_issue
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-issuers"
     }
@@ -7424,7 +7528,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_clust
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-clusterissuers"
     }
@@ -7452,7 +7556,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_certi
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-certificates"
     }
@@ -7480,7 +7584,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_order
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-orders"
     }
@@ -7508,7 +7612,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_chall
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-challenges"
     }
@@ -7536,7 +7640,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_ingre
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-ingress-shim"
     }
@@ -7564,7 +7668,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_appro
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-approve:cert-manager-io"
     }
@@ -7592,7 +7696,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_certi
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-controller-certificatesigningrequests"
     }
@@ -7620,7 +7724,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_webhook_subjecta
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook:subjectaccessreviews"
     }
@@ -7648,7 +7752,7 @@ resource "kubernetes_manifest" "role_kube_system_cert_manager_cainjector_leadere
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-cainjector:leaderelection"
       "namespace" = "kube-system"
@@ -7695,7 +7799,7 @@ resource "kubernetes_manifest" "role_kube_system_cert_manager_leaderelection" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager:leaderelection"
       "namespace" = "kube-system"
@@ -7741,7 +7845,7 @@ resource "kubernetes_manifest" "role_cert_manager_cert_manager_webhook_dynamic_s
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook:dynamic-serving"
       "namespace" = var.namespace
@@ -7788,7 +7892,7 @@ resource "kubernetes_manifest" "rolebinding_kube_system_cert_manager_cainjector_
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-cainjector:leaderelection"
       "namespace" = "kube-system"
@@ -7817,7 +7921,7 @@ resource "kubernetes_manifest" "rolebinding_kube_system_cert_manager_leaderelect
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager:leaderelection"
       "namespace" = "kube-system"
@@ -7846,7 +7950,7 @@ resource "kubernetes_manifest" "rolebinding_cert_manager_cert_manager_webhook_dy
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook:dynamic-serving"
       "namespace" = var.namespace
@@ -7875,7 +7979,7 @@ resource "kubernetes_manifest" "service_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -7908,7 +8012,7 @@ resource "kubernetes_manifest" "service_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -7941,7 +8045,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-cainjector"
       "namespace" = var.namespace
@@ -7962,7 +8066,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
             "app.kubernetes.io/component" = "cainjector"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "cainjector"
-            "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+            "app.kubernetes.io/version" = "v1.13.0-beta.0"
           }
         }
         "spec" = {
@@ -7982,7 +8086,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-cainjector:v1.13.0-alpha.0"
+              "image" = "quay.io/jetstack/cert-manager-cainjector:v1.13.0-beta.0"
               "imagePullPolicy" = "IfNotPresent"
               "name" = "cert-manager-cainjector"
               "securityContext" = {
@@ -8021,7 +8125,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -8047,7 +8151,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
             "app.kubernetes.io/component" = "controller"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "cert-manager"
-            "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+            "app.kubernetes.io/version" = "v1.13.0-beta.0"
           }
         }
         "spec" = {
@@ -8057,7 +8161,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
                 "--v=2",
                 "--cluster-resource-namespace=$(POD_NAMESPACE)",
                 "--leader-election-namespace=kube-system",
-                "--acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.13.0-alpha.0",
+                "--acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.13.0-beta.0",
                 "--max-concurrent-challenges=60",
               ]
               "env" = [
@@ -8070,7 +8174,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-controller:v1.13.0-alpha.0"
+              "image" = "quay.io/jetstack/cert-manager-controller:v1.13.0-beta.0"
               "imagePullPolicy" = "IfNotPresent"
               "name" = "cert-manager-controller"
               "ports" = [
@@ -8121,7 +8225,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -8142,7 +8246,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
             "app.kubernetes.io/component" = "webhook"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "webhook"
-            "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+            "app.kubernetes.io/version" = "v1.13.0-beta.0"
           }
         }
         "spec" = {
@@ -8167,7 +8271,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-webhook:v1.13.0-alpha.0"
+              "image" = "quay.io/jetstack/cert-manager-webhook:v1.13.0-beta.0"
               "imagePullPolicy" = "IfNotPresent"
               "livenessProbe" = {
                 "failureThreshold" = 3
@@ -8245,7 +8349,7 @@ resource "kubernetes_manifest" "mutatingwebhookconfiguration_cert_manager_webhoo
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook"
     }
@@ -8301,7 +8405,7 @@ resource "kubernetes_manifest" "validatingwebhookconfiguration_cert_manager_webh
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.13.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.13.0-beta.0"
       }
       "name" = "cert-manager-webhook"
     }
@@ -8327,13 +8431,6 @@ resource "kubernetes_manifest" "validatingwebhookconfiguration_cert_manager_webh
               "operator" = "NotIn"
               "values" = [
                 "true",
-              ]
-            },
-            {
-              "key" = "name"
-              "operator" = "NotIn"
-              "values" = [
-                "cert-manager",
               ]
             },
           ]
