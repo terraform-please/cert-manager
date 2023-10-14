@@ -7,7 +7,7 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "clusterissuers.cert-manager.io"
     }
@@ -670,7 +670,11 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
                                     "description" = "The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed."
                                     "properties" = {
                                       "class" = {
-                                        "description" = "The ingress class to use when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of 'class' or 'name' may be specified."
+                                        "description" = "This field configures the annotation `kubernetes.io/ingress.class` when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of `class`, `name` or `ingressClassName` may be specified."
+                                        "type" = "string"
+                                      }
+                                      "ingressClassName" = {
+                                        "description" = "This field configures the field `ingressClassName` on the created Ingress resources used to solve ACME challenges that use this challenge solver. This is the recommended way of configuring the ingress class. Only one of `class`, `name` or `ingressClassName` may be specified."
                                         "type" = "string"
                                       }
                                       "ingressTemplate" = {
@@ -700,7 +704,7 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
                                         "type" = "object"
                                       }
                                       "name" = {
-                                        "description" = "The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources."
+                                        "description" = "The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources. Only one of `class`, `name` or `ingressClassName` may be specified."
                                         "type" = "string"
                                       }
                                       "podTemplate" = {
@@ -727,7 +731,7 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
                                             "type" = "object"
                                           }
                                           "spec" = {
-                                            "description" = "PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored."
+                                            "description" = "PodSpec defines overrides for the HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields. All other fields will be ignored."
                                             "properties" = {
                                               "affinity" = {
                                                 "description" = "If specified, the pod's scheduling constraints"
@@ -1386,6 +1390,21 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
                                                 }
                                                 "type" = "object"
                                               }
+                                              "imagePullSecrets" = {
+                                                "description" = "If specified, the pod's imagePullSecrets"
+                                                "items" = {
+                                                  "description" = "LocalObjectReference contains enough information to let you locate the referenced object inside the same namespace."
+                                                  "properties" = {
+                                                    "name" = {
+                                                      "description" = "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?"
+                                                      "type" = "string"
+                                                    }
+                                                  }
+                                                  "type" = "object"
+                                                  "x-kubernetes-map-type" = "atomic"
+                                                }
+                                                "type" = "array"
+                                              }
                                               "nodeSelector" = {
                                                 "additionalProperties" = {
                                                   "type" = "string"
@@ -1598,7 +1617,7 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
                                   "type" = "object"
                                 }
                                 "serviceAccountRef" = {
-                                  "description" = "A reference to a service account that will be used to request a bound token (also known as \"projected token\"). Compared to using \"secretRef\", using this field means that you don't rely on statically bound tokens. To use this field, you must configure an RBAC rule to let cert-manager request a token. See <link to a page in cert-manager.io> to learn more."
+                                  "description" = "A reference to a service account that will be used to request a bound token (also known as \"projected token\"). Compared to using \"secretRef\", using this field means that you don't rely on statically bound tokens. To use this field, you must configure an RBAC rule to let cert-manager request a token."
                                   "properties" = {
                                     "name" = {
                                       "description" = "Name of the ServiceAccount used to request a token."
@@ -1851,7 +1870,7 @@ resource "kubernetes_manifest" "customresourcedefinition_challenges_acme_cert_ma
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "challenges.acme.cert-manager.io"
     }
@@ -2460,7 +2479,11 @@ resource "kubernetes_manifest" "customresourcedefinition_challenges_acme_cert_ma
                               "description" = "The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed."
                               "properties" = {
                                 "class" = {
-                                  "description" = "The ingress class to use when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of 'class' or 'name' may be specified."
+                                  "description" = "This field configures the annotation `kubernetes.io/ingress.class` when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of `class`, `name` or `ingressClassName` may be specified."
+                                  "type" = "string"
+                                }
+                                "ingressClassName" = {
+                                  "description" = "This field configures the field `ingressClassName` on the created Ingress resources used to solve ACME challenges that use this challenge solver. This is the recommended way of configuring the ingress class. Only one of `class`, `name` or `ingressClassName` may be specified."
                                   "type" = "string"
                                 }
                                 "ingressTemplate" = {
@@ -2490,7 +2513,7 @@ resource "kubernetes_manifest" "customresourcedefinition_challenges_acme_cert_ma
                                   "type" = "object"
                                 }
                                 "name" = {
-                                  "description" = "The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources."
+                                  "description" = "The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources. Only one of `class`, `name` or `ingressClassName` may be specified."
                                   "type" = "string"
                                 }
                                 "podTemplate" = {
@@ -2517,7 +2540,7 @@ resource "kubernetes_manifest" "customresourcedefinition_challenges_acme_cert_ma
                                       "type" = "object"
                                     }
                                     "spec" = {
-                                      "description" = "PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored."
+                                      "description" = "PodSpec defines overrides for the HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields. All other fields will be ignored."
                                       "properties" = {
                                         "affinity" = {
                                           "description" = "If specified, the pod's scheduling constraints"
@@ -3176,6 +3199,21 @@ resource "kubernetes_manifest" "customresourcedefinition_challenges_acme_cert_ma
                                           }
                                           "type" = "object"
                                         }
+                                        "imagePullSecrets" = {
+                                          "description" = "If specified, the pod's imagePullSecrets"
+                                          "items" = {
+                                            "description" = "LocalObjectReference contains enough information to let you locate the referenced object inside the same namespace."
+                                            "properties" = {
+                                              "name" = {
+                                                "description" = "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?"
+                                                "type" = "string"
+                                              }
+                                            }
+                                            "type" = "object"
+                                            "x-kubernetes-map-type" = "atomic"
+                                          }
+                                          "type" = "array"
+                                        }
                                         "nodeSelector" = {
                                           "additionalProperties" = {
                                             "type" = "string"
@@ -3358,7 +3396,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "certificaterequests.cert-manager.io"
     }
@@ -3636,7 +3674,7 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "issuers.cert-manager.io"
     }
@@ -4299,7 +4337,11 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
                                     "description" = "The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed."
                                     "properties" = {
                                       "class" = {
-                                        "description" = "The ingress class to use when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of 'class' or 'name' may be specified."
+                                        "description" = "This field configures the annotation `kubernetes.io/ingress.class` when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of `class`, `name` or `ingressClassName` may be specified."
+                                        "type" = "string"
+                                      }
+                                      "ingressClassName" = {
+                                        "description" = "This field configures the field `ingressClassName` on the created Ingress resources used to solve ACME challenges that use this challenge solver. This is the recommended way of configuring the ingress class. Only one of `class`, `name` or `ingressClassName` may be specified."
                                         "type" = "string"
                                       }
                                       "ingressTemplate" = {
@@ -4329,7 +4371,7 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
                                         "type" = "object"
                                       }
                                       "name" = {
-                                        "description" = "The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources."
+                                        "description" = "The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources. Only one of `class`, `name` or `ingressClassName` may be specified."
                                         "type" = "string"
                                       }
                                       "podTemplate" = {
@@ -4356,7 +4398,7 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
                                             "type" = "object"
                                           }
                                           "spec" = {
-                                            "description" = "PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored."
+                                            "description" = "PodSpec defines overrides for the HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields. All other fields will be ignored."
                                             "properties" = {
                                               "affinity" = {
                                                 "description" = "If specified, the pod's scheduling constraints"
@@ -5015,6 +5057,21 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
                                                 }
                                                 "type" = "object"
                                               }
+                                              "imagePullSecrets" = {
+                                                "description" = "If specified, the pod's imagePullSecrets"
+                                                "items" = {
+                                                  "description" = "LocalObjectReference contains enough information to let you locate the referenced object inside the same namespace."
+                                                  "properties" = {
+                                                    "name" = {
+                                                      "description" = "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?"
+                                                      "type" = "string"
+                                                    }
+                                                  }
+                                                  "type" = "object"
+                                                  "x-kubernetes-map-type" = "atomic"
+                                                }
+                                                "type" = "array"
+                                              }
                                               "nodeSelector" = {
                                                 "additionalProperties" = {
                                                   "type" = "string"
@@ -5227,7 +5284,7 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
                                   "type" = "object"
                                 }
                                 "serviceAccountRef" = {
-                                  "description" = "A reference to a service account that will be used to request a bound token (also known as \"projected token\"). Compared to using \"secretRef\", using this field means that you don't rely on statically bound tokens. To use this field, you must configure an RBAC rule to let cert-manager request a token. See <link to a page in cert-manager.io> to learn more."
+                                  "description" = "A reference to a service account that will be used to request a bound token (also known as \"projected token\"). Compared to using \"secretRef\", using this field means that you don't rely on statically bound tokens. To use this field, you must configure an RBAC rule to let cert-manager request a token."
                                   "properties" = {
                                     "name" = {
                                       "description" = "Name of the ServiceAccount used to request a token."
@@ -5480,7 +5537,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "certificates.cert-manager.io"
     }
@@ -6000,7 +6057,7 @@ resource "kubernetes_manifest" "customresourcedefinition_orders_acme_cert_manage
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "orders.acme.cert-manager.io"
     }
@@ -6251,7 +6308,7 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager_cainjec
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-cainjector"
       "namespace" = var.namespace
@@ -6269,7 +6326,7 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -6287,7 +6344,7 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager_webhook
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -6304,7 +6361,7 @@ resource "kubernetes_manifest" "configmap_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -6321,7 +6378,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_cainjector" {
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-cainjector"
     }
@@ -6422,7 +6479,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_issuers" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-issuers"
     }
@@ -6494,7 +6551,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_clusterissue
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-clusterissuers"
     }
@@ -6566,7 +6623,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_certificates
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-certificates"
     }
@@ -6671,7 +6728,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_orders" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-orders"
     }
@@ -6778,7 +6835,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_challenges" 
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-challenges"
     }
@@ -6944,7 +7001,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_ingress_shim
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-ingress-shim"
     }
@@ -7054,7 +7111,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_view" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
         "rbac.authorization.k8s.io/aggregate-to-admin" = "true"
         "rbac.authorization.k8s.io/aggregate-to-edit" = "true"
         "rbac.authorization.k8s.io/aggregate-to-view" = "true"
@@ -7104,7 +7161,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_edit" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
         "rbac.authorization.k8s.io/aggregate-to-admin" = "true"
         "rbac.authorization.k8s.io/aggregate-to-edit" = "true"
       }
@@ -7168,7 +7225,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_approve_cert
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-approve:cert-manager-io"
     }
@@ -7201,7 +7258,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_certificates
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-certificatesigningrequests"
     }
@@ -7271,7 +7328,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_webhook_subjectaccessre
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook:subjectaccessreviews"
     }
@@ -7300,7 +7357,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_cainjector" {
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-cainjector"
     }
@@ -7328,7 +7385,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_issue
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-issuers"
     }
@@ -7356,7 +7413,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_clust
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-clusterissuers"
     }
@@ -7384,7 +7441,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_certi
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-certificates"
     }
@@ -7412,7 +7469,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_order
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-orders"
     }
@@ -7440,7 +7497,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_chall
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-challenges"
     }
@@ -7468,7 +7525,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_ingre
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-ingress-shim"
     }
@@ -7496,7 +7553,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_appro
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-approve:cert-manager-io"
     }
@@ -7524,7 +7581,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_certi
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-controller-certificatesigningrequests"
     }
@@ -7552,7 +7609,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_webhook_subjecta
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook:subjectaccessreviews"
     }
@@ -7580,7 +7637,7 @@ resource "kubernetes_manifest" "role_kube_system_cert_manager_cainjector_leadere
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-cainjector:leaderelection"
       "namespace" = "kube-system"
@@ -7627,7 +7684,7 @@ resource "kubernetes_manifest" "role_kube_system_cert_manager_leaderelection" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager:leaderelection"
       "namespace" = "kube-system"
@@ -7673,7 +7730,7 @@ resource "kubernetes_manifest" "role_cert_manager_cert_manager_webhook_dynamic_s
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook:dynamic-serving"
       "namespace" = var.namespace
@@ -7720,7 +7777,7 @@ resource "kubernetes_manifest" "rolebinding_kube_system_cert_manager_cainjector_
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-cainjector:leaderelection"
       "namespace" = "kube-system"
@@ -7749,7 +7806,7 @@ resource "kubernetes_manifest" "rolebinding_kube_system_cert_manager_leaderelect
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager:leaderelection"
       "namespace" = "kube-system"
@@ -7778,7 +7835,7 @@ resource "kubernetes_manifest" "rolebinding_cert_manager_cert_manager_webhook_dy
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook:dynamic-serving"
       "namespace" = var.namespace
@@ -7807,7 +7864,7 @@ resource "kubernetes_manifest" "service_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -7840,7 +7897,7 @@ resource "kubernetes_manifest" "service_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -7873,7 +7930,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-cainjector"
       "namespace" = var.namespace
@@ -7894,7 +7951,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
             "app.kubernetes.io/component" = "cainjector"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "cainjector"
-            "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+            "app.kubernetes.io/version" = "v1.12.0-alpha.1"
           }
         }
         "spec" = {
@@ -7914,7 +7971,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-cainjector:v1.12.0-alpha.0"
+              "image" = "quay.io/jetstack/cert-manager-cainjector:v1.12.0-alpha.1"
               "imagePullPolicy" = "IfNotPresent"
               "name" = "cert-manager-cainjector"
               "securityContext" = {
@@ -7952,7 +8009,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -7978,7 +8035,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
             "app.kubernetes.io/component" = "controller"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "cert-manager"
-            "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+            "app.kubernetes.io/version" = "v1.12.0-alpha.1"
           }
         }
         "spec" = {
@@ -7988,7 +8045,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
                 "--v=2",
                 "--cluster-resource-namespace=$(POD_NAMESPACE)",
                 "--leader-election-namespace=kube-system",
-                "--acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.12.0-alpha.0",
+                "--acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.12.0-alpha.1",
                 "--max-concurrent-challenges=60",
               ]
               "env" = [
@@ -8001,7 +8058,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-controller:v1.12.0-alpha.0"
+              "image" = "quay.io/jetstack/cert-manager-controller:v1.12.0-alpha.1"
               "imagePullPolicy" = "IfNotPresent"
               "name" = "cert-manager-controller"
               "ports" = [
@@ -8046,7 +8103,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -8067,7 +8124,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
             "app.kubernetes.io/component" = "webhook"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "webhook"
-            "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+            "app.kubernetes.io/version" = "v1.12.0-alpha.1"
           }
         }
         "spec" = {
@@ -8092,7 +8149,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-webhook:v1.12.0-alpha.0"
+              "image" = "quay.io/jetstack/cert-manager-webhook:v1.12.0-alpha.1"
               "imagePullPolicy" = "IfNotPresent"
               "livenessProbe" = {
                 "failureThreshold" = 3
@@ -8169,7 +8226,7 @@ resource "kubernetes_manifest" "mutatingwebhookconfiguration_cert_manager_webhoo
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook"
     }
@@ -8225,7 +8282,7 @@ resource "kubernetes_manifest" "validatingwebhookconfiguration_cert_manager_webh
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-alpha.0"
+        "app.kubernetes.io/version" = "v1.12.0-alpha.1"
       }
       "name" = "cert-manager-webhook"
     }
