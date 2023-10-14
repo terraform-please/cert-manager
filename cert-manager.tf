@@ -7,7 +7,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificaterequests_cer
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "certificaterequests.cert-manager.io"
     }
@@ -285,7 +285,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "certificates.cert-manager.io"
     }
@@ -445,7 +445,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                           "description" = "JKS configures options for storing a JKS keystore in the `spec.secretName` Secret resource."
                           "properties" = {
                             "create" = {
-                              "description" = "Create enables JKS keystore creation for the Certificate. If true, a file named `keystore.jks` will be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef`. The keystore file will be updated immediately. A file named `truststore.jks` will also be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef` containing the issuing Certificate Authority"
+                              "description" = "Create enables JKS keystore creation for the Certificate. If true, a file named `keystore.jks` will be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef`. The keystore file will be updated immediately. If the issuer provided a CA certificate, a file named `truststore.jks` will also be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef` containing the issuing Certificate Authority"
                               "type" = "boolean"
                             }
                             "passwordSecretRef" = {
@@ -476,7 +476,7 @@ resource "kubernetes_manifest" "customresourcedefinition_certificates_cert_manag
                           "description" = "PKCS12 configures options for storing a PKCS12 keystore in the `spec.secretName` Secret resource."
                           "properties" = {
                             "create" = {
-                              "description" = "Create enables PKCS12 keystore creation for the Certificate. If true, a file named `keystore.p12` will be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef`. The keystore file will be updated immediately. A file named `truststore.p12` will also be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef` containing the issuing Certificate Authority"
+                              "description" = "Create enables PKCS12 keystore creation for the Certificate. If true, a file named `keystore.p12` will be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef`. The keystore file will be updated immediately. If the issuer provided a CA certificate, a file named `truststore.p12` will also be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef` containing the issuing Certificate Authority"
                               "type" = "boolean"
                             }
                             "passwordSecretRef" = {
@@ -805,7 +805,7 @@ resource "kubernetes_manifest" "customresourcedefinition_challenges_acme_cert_ma
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "challenges.acme.cert-manager.io"
     }
@@ -2331,7 +2331,7 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "clusterissuers.cert-manager.io"
     }
@@ -4105,6 +4105,10 @@ resource "kubernetes_manifest" "customresourcedefinition_clusterissuers_cert_man
                     "acme" = {
                       "description" = "ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates."
                       "properties" = {
+                        "lastPrivateKeyHash" = {
+                          "description" = "LastPrivateKeyHash is a hash of the private key associated with the latest registered ACME account, in order to track changes made to registered account associated with the Issuer"
+                          "type" = "string"
+                        }
                         "lastRegisteredEmail" = {
                           "description" = "LastRegisteredEmail is the email associated with the latest registered ACME account, in order to track changes made to registered account associated with the  Issuer"
                           "type" = "string"
@@ -4194,7 +4198,7 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "issuers.cert-manager.io"
     }
@@ -5968,6 +5972,10 @@ resource "kubernetes_manifest" "customresourcedefinition_issuers_cert_manager_io
                     "acme" = {
                       "description" = "ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates."
                       "properties" = {
+                        "lastPrivateKeyHash" = {
+                          "description" = "LastPrivateKeyHash is a hash of the private key associated with the latest registered ACME account, in order to track changes made to registered account associated with the Issuer"
+                          "type" = "string"
+                        }
                         "lastRegisteredEmail" = {
                           "description" = "LastRegisteredEmail is the email associated with the latest registered ACME account, in order to track changes made to registered account associated with the  Issuer"
                           "type" = "string"
@@ -6057,7 +6065,7 @@ resource "kubernetes_manifest" "customresourcedefinition_orders_acme_cert_manage
         "app" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "orders.acme.cert-manager.io"
     }
@@ -6308,7 +6316,7 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager_cainjec
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-cainjector"
       "namespace" = var.namespace
@@ -6326,7 +6334,7 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -6344,7 +6352,7 @@ resource "kubernetes_manifest" "serviceaccount_cert_manager_cert_manager_webhook
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -6361,7 +6369,7 @@ resource "kubernetes_manifest" "configmap_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -6378,7 +6386,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_cainjector" {
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-cainjector"
     }
@@ -6436,6 +6444,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_cainjector" {
           "list",
           "watch",
           "update",
+          "patch",
         ]
       },
       {
@@ -6450,6 +6459,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_cainjector" {
           "list",
           "watch",
           "update",
+          "patch",
         ]
       },
       {
@@ -6464,6 +6474,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_cainjector" {
           "list",
           "watch",
           "update",
+          "patch",
         ]
       },
     ]
@@ -6479,7 +6490,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_issuers" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-issuers"
     }
@@ -6551,7 +6562,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_clusterissue
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-clusterissuers"
     }
@@ -6623,7 +6634,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_certificates
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-certificates"
     }
@@ -6728,7 +6739,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_orders" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-orders"
     }
@@ -6835,7 +6846,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_challenges" 
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-challenges"
     }
@@ -7001,7 +7012,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_ingress_shim
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-ingress-shim"
     }
@@ -7111,7 +7122,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_view" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
         "rbac.authorization.k8s.io/aggregate-to-admin" = "true"
         "rbac.authorization.k8s.io/aggregate-to-edit" = "true"
         "rbac.authorization.k8s.io/aggregate-to-view" = "true"
@@ -7161,7 +7172,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_edit" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
         "rbac.authorization.k8s.io/aggregate-to-admin" = "true"
         "rbac.authorization.k8s.io/aggregate-to-edit" = "true"
       }
@@ -7225,7 +7236,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_approve_cert
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-approve:cert-manager-io"
     }
@@ -7258,7 +7269,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_controller_certificates
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-certificatesigningrequests"
     }
@@ -7328,7 +7339,7 @@ resource "kubernetes_manifest" "clusterrole_cert_manager_webhook_subjectaccessre
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook:subjectaccessreviews"
     }
@@ -7357,7 +7368,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_cainjector" {
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-cainjector"
     }
@@ -7385,7 +7396,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_issue
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-issuers"
     }
@@ -7413,7 +7424,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_clust
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-clusterissuers"
     }
@@ -7441,7 +7452,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_certi
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-certificates"
     }
@@ -7469,7 +7480,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_order
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-orders"
     }
@@ -7497,7 +7508,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_chall
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-challenges"
     }
@@ -7525,7 +7536,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_ingre
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-ingress-shim"
     }
@@ -7553,7 +7564,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_appro
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-approve:cert-manager-io"
     }
@@ -7581,7 +7592,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_controller_certi
         "app.kubernetes.io/component" = "cert-manager"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-controller-certificatesigningrequests"
     }
@@ -7609,7 +7620,7 @@ resource "kubernetes_manifest" "clusterrolebinding_cert_manager_webhook_subjecta
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook:subjectaccessreviews"
     }
@@ -7637,7 +7648,7 @@ resource "kubernetes_manifest" "role_kube_system_cert_manager_cainjector_leadere
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-cainjector:leaderelection"
       "namespace" = "kube-system"
@@ -7684,7 +7695,7 @@ resource "kubernetes_manifest" "role_kube_system_cert_manager_leaderelection" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager:leaderelection"
       "namespace" = "kube-system"
@@ -7730,7 +7741,7 @@ resource "kubernetes_manifest" "role_cert_manager_cert_manager_webhook_dynamic_s
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook:dynamic-serving"
       "namespace" = var.namespace
@@ -7777,7 +7788,7 @@ resource "kubernetes_manifest" "rolebinding_kube_system_cert_manager_cainjector_
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-cainjector:leaderelection"
       "namespace" = "kube-system"
@@ -7806,7 +7817,7 @@ resource "kubernetes_manifest" "rolebinding_kube_system_cert_manager_leaderelect
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager:leaderelection"
       "namespace" = "kube-system"
@@ -7835,7 +7846,7 @@ resource "kubernetes_manifest" "rolebinding_cert_manager_cert_manager_webhook_dy
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook:dynamic-serving"
       "namespace" = var.namespace
@@ -7864,7 +7875,7 @@ resource "kubernetes_manifest" "service_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -7897,7 +7908,7 @@ resource "kubernetes_manifest" "service_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -7930,7 +7941,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
         "app.kubernetes.io/component" = "cainjector"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cainjector"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-cainjector"
       "namespace" = var.namespace
@@ -7951,7 +7962,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
             "app.kubernetes.io/component" = "cainjector"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "cainjector"
-            "app.kubernetes.io/version" = "v1.12.0-beta.0"
+            "app.kubernetes.io/version" = "v1.12.0-beta.1"
           }
         }
         "spec" = {
@@ -7971,7 +7982,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_cainjector"
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-cainjector:v1.12.0-beta.0"
+              "image" = "quay.io/jetstack/cert-manager-cainjector:v1.12.0-beta.1"
               "imagePullPolicy" = "IfNotPresent"
               "name" = "cert-manager-cainjector"
               "securityContext" = {
@@ -8009,7 +8020,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
         "app.kubernetes.io/component" = "controller"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "cert-manager"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager"
       "namespace" = var.namespace
@@ -8035,7 +8046,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
             "app.kubernetes.io/component" = "controller"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "cert-manager"
-            "app.kubernetes.io/version" = "v1.12.0-beta.0"
+            "app.kubernetes.io/version" = "v1.12.0-beta.1"
           }
         }
         "spec" = {
@@ -8045,7 +8056,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
                 "--v=2",
                 "--cluster-resource-namespace=$(POD_NAMESPACE)",
                 "--leader-election-namespace=kube-system",
-                "--acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.12.0-beta.0",
+                "--acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.12.0-beta.1",
                 "--max-concurrent-challenges=60",
               ]
               "env" = [
@@ -8058,13 +8069,18 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager" {
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-controller:v1.12.0-beta.0"
+              "image" = "quay.io/jetstack/cert-manager-controller:v1.12.0-beta.1"
               "imagePullPolicy" = "IfNotPresent"
               "name" = "cert-manager-controller"
               "ports" = [
                 {
                   "containerPort" = 9402
                   "name" = "http-metrics"
+                  "protocol" = "TCP"
+                },
+                {
+                  "containerPort" = 9403
+                  "name" = "http-healthz"
                   "protocol" = "TCP"
                 },
               ]
@@ -8103,7 +8119,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook"
       "namespace" = var.namespace
@@ -8124,7 +8140,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
             "app.kubernetes.io/component" = "webhook"
             "app.kubernetes.io/instance" = "cert-manager"
             "app.kubernetes.io/name" = "webhook"
-            "app.kubernetes.io/version" = "v1.12.0-beta.0"
+            "app.kubernetes.io/version" = "v1.12.0-beta.1"
           }
         }
         "spec" = {
@@ -8149,7 +8165,7 @@ resource "kubernetes_manifest" "deployment_cert_manager_cert_manager_webhook" {
                   }
                 },
               ]
-              "image" = "quay.io/jetstack/cert-manager-webhook:v1.12.0-beta.0"
+              "image" = "quay.io/jetstack/cert-manager-webhook:v1.12.0-beta.1"
               "imagePullPolicy" = "IfNotPresent"
               "livenessProbe" = {
                 "failureThreshold" = 3
@@ -8226,7 +8242,7 @@ resource "kubernetes_manifest" "mutatingwebhookconfiguration_cert_manager_webhoo
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook"
     }
@@ -8282,7 +8298,7 @@ resource "kubernetes_manifest" "validatingwebhookconfiguration_cert_manager_webh
         "app.kubernetes.io/component" = "webhook"
         "app.kubernetes.io/instance" = "cert-manager"
         "app.kubernetes.io/name" = "webhook"
-        "app.kubernetes.io/version" = "v1.12.0-beta.0"
+        "app.kubernetes.io/version" = "v1.12.0-beta.1"
       }
       "name" = "cert-manager-webhook"
     }
