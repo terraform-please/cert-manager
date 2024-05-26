@@ -1,5 +1,5 @@
 variable "namespace" {
-  description = "Name of namespace"
+  description = "Namespace"
   default     = "cert-manager"
   type        = string
 }
