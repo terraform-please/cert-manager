@@ -21,7 +21,7 @@ of your infrastructure using Terraform.
 
 ```hcl
 module "cert_manager" {
-  source = "git::https://github.com/terraform-please/cert-manager.git//v1.14.5"
+  source = "git::https://github.com/terraform-please/cert-manager.git//v1.15.0"
 }
 ```
 
@@ -34,7 +34,7 @@ Update cdktf.json to include the module:
   "terraformModules": [
     {
       "name": "cert-manager",
-      "source": "git::https://github.com/terraform-please/cert-manager.git//v1.14.5"
+      "source": "git::https://github.com/terraform-please/cert-manager.git//v1.15.0"
     }
   ]
 }
