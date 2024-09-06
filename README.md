@@ -21,7 +21,7 @@ of your infrastructure using Terraform.
 
 ```hcl
 module "cert_manager" {
-  source = "git::https://github.com/terraform-please/cert-manager.git//v1.15.0"
+  source = "git::https://github.com/terraform-please/cert-manager.git//v1.15.3"
 }
 ```
 
