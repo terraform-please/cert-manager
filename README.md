@@ -34,7 +34,7 @@ Update cdktf.json to include the module:
   "terraformModules": [
     {
       "name": "cert-manager",
-      "source": "git::https://github.com/terraform-please/cert-manager.git//v1.15.0"
+      "source": "git::https://github.com/terraform-please/cert-manager.git//v1.15.3"
     }
   ]
 }
